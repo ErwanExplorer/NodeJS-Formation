@@ -1,15 +1,43 @@
 import { createReadStream } from 'node:fs'
 import { createServer } from 'node:http'
-import { text } from 'stream/consumers'
+import { create, index, remove, update } from './functions/api/todos.js'
+import { NotFoundError } from './functions/errors.js'
 
-const ports = 8000
-const host = `https://localhost:${ports}`
-
-console.log(`Server is running on ${host}`)
-const server = createServer(async (req, res) => {
-    const file = createReadStream('index.html')
-    res.writeHead(200, { 'Content-Type': 'text/html' })
-    file.pipe(res)
-    //res.write(`Bonjour ${url.searchParams.get('name')}`)
-})
-server.listen(ports)
+createServer(async (req, res) => {
+    try {
+        res.setHeader('Content-Type', 'application/json')
+        const url = new URL(req.url, `http://${req.headers.host}`)
+        const endpoint = `${req.method} ${url.pathname}`
+        let results
+        switch (endpoint) {
+            case 'GET /':
+                res.setHeader('Content-Type', 'text/html')
+                createReadStream('index.html').pipe(res)
+                return
+            case 'GET /todos':
+                results = await index(req, res)
+                break
+            case 'POST /todos':
+                results = await create(req, res)
+                break
+            case 'DELETE /todos':
+                await remove(req, res, url)
+                break
+            case 'PUT /todos':
+                results = await update(req, res, url)
+                break
+            default:
+                res.writeHead(404)
+        }
+        if (results) {
+            res.write(JSON.stringify(results))
+        }
+    } catch (e) {
+        if (e instanceof NotFoundError) {
+            res.writeHead(404)
+        } else {
+            throw e
+        }
+    }
+    res.end()
+}).listen(3000)
