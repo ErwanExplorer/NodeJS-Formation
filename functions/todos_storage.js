@@ -54,6 +54,6 @@ export async function updateTodo(id, partialTodo) {
         throw new NotFoundError()
     }
     Object.assign(todo, partialTodo)
-    await writeFile(path, JSON.stringify(todos), null, 2)
+    await writeFile(path, JSON.stringify(todos, null, 2))
     return todo
 }
