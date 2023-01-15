@@ -5,11 +5,6 @@
     "id": 1673711561101
   },
   {
-    "title": "Créer une tache sans completed",
-    "completed": true,
-    "id": 1673711292306
-  },
-  {
     "title": "Seconde Tache",
     "completed": false,
     "id": 1673711291588
